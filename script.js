@@ -1,6 +1,6 @@
 ( function( $ ) {
 	$( function() {
-	  $( "#p2-post-deadline" ).datepicker( p2postdeadlines );
+	  $( "#p2-post-deadline-datepicker" ).datepicker( p2postdeadlines );
 	} );
 
 	$( document ).on( 'p2_new_post_submit_success', function( event, data ) {
