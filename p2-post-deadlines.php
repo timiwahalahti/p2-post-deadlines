@@ -217,7 +217,8 @@ class P2_Post_Deadlines {
   	}
 
   	// Add the deadline to end of content.
-  	$content .= '<p class="p2-post-deadline">' . self::get_post_deadline_string( $post_deadline ) . '</p> ';
+    $deadline = self::get_post_deadline_string( $post_deadline );
+  	$content .= '<p class="p2-post-deadline">' . $deadline['str'] . '</p> ';
 		return $content;
   } // end function show_post_deadline_in_content
 
@@ -250,7 +251,7 @@ class P2_Post_Deadlines {
   	}
 
   	// Try to serve posts from cache if allowed by filter.
-    if ( apply_filters( 'p2_post_deadlines_cache_posts_with_deadline', true ) )
+    if ( apply_filters( 'p2_post_deadlines_cache_posts_with_deadline', true ) ) {
       $today_key = date( 'Ymd' );
     	$posts = get_transient( "p2_posts_with_deadline_{$today_key}_{$order}" );
     	if ( is_array( $posts ) ) {
@@ -291,7 +292,7 @@ class P2_Post_Deadlines {
   	}
 
   	// Cache posts for 12 hours if allowed in hook.
-    if ( apply_filters( 'p2_post_deadlines_cache_posts_with_deadline', true ) )
+    if ( apply_filters( 'p2_post_deadlines_cache_posts_with_deadline', true ) ) {
       set_transient( "p2_posts_with_deadline_{$today_key}_{$order}", $posts, apply_filters( 'p2_post_deadlines_cache_expiration', DAY_IN_SECONDS ) );
     }
 
