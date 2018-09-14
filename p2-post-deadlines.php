@@ -209,16 +209,19 @@ class P2_Post_Deadlines {
    *  @since  1.0.0
    */
   public function show_post_deadline_in_content( $content ) {
-  	global $post;
-  	$post_deadline = get_post_meta( $post->ID, '_p2_post_deadline', true );
+    if ( apply_filters( 'p2_post_deadlines_show_post_deadline_in_content', true ) ) {
+    	global $post;
+    	$post_deadline = get_post_meta( $post->ID, '_p2_post_deadline', true );
 
-  	if ( empty( $post_deadline ) ) {
-  		return $content;
-  	}
+    	if ( empty( $post_deadline ) ) {
+    		return $content;
+    	}
 
-  	// Add the deadline to end of content.
-    $deadline = self::get_post_deadline_string( $post_deadline );
-  	$content .= '<p class="p2-post-deadline">' . $deadline['str'] . '</p> ';
+    	// Add the deadline to end of content.
+      $deadline = self::get_post_deadline_string( $post_deadline );
+    	$content .= '<p class="p2-post-deadline">' . $deadline['str'] . '</p> ';
+    }
+
 		return $content;
   } // end function show_post_deadline_in_content
 
