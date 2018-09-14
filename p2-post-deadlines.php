@@ -241,7 +241,8 @@ class P2_Post_Deadlines {
   	}
 
   	// Try to serve posts from cache.
-  	$posts = get_transient( "p2_posts_with_deadline_{$order}" );
+    $today_key = date( 'Ymd' );
+  	$posts = get_transient( "p2_posts_with_deadline_{$today_key}_{$order}" );
   	if ( is_array( $posts ) ) {
   		return $posts;
   	}
@@ -274,13 +275,13 @@ class P2_Post_Deadlines {
   				'post_id'		=> $post_id,
   				'title'			=> get_the_title(),
   				'deadline'	=> $post_deadline,
-  				'deadline_str'	=> self::get_post_deadline_string( $post_deadline ),
+  				'deadline'	=> self::get_post_deadline_string( $post_deadline ),
   			);
   		}
   	}
 
   	// Cache posts for 12 hours.
-  	set_transient( "p2_posts_with_deadline_{$order}", $posts, 12 * HOUR_IN_SECONDS );
+  	set_transient( "p2_posts_with_deadline_{$today_key}_{$order}", $posts, DAY_IN_SECONDS );
 
   	return $posts;
   } // end function get_posts_with_deadline
@@ -311,15 +312,21 @@ class P2_Post_Deadlines {
    *  @since  0.1.0
    */
   private function get_post_deadline_string( $post_deadline = null ) {
+    $deadline_soon = false;
   	$deadline = date_i18n( get_option( 'date_format' ), strtotime( $post_deadline ) );
 
 		if ( date( 'Y-m-d' ) === $post_deadline ) {
 		  $deadline = __( 'today', 'my-text-domain' );
+      $deadline_soon = true;
 		} else if ( date( 'Y-m-d', strtotime( 'tomorrow' ) ) === $post_deadline ) {
 		  $deadline = __( 'tomorrow', 'my-text-domain' );
+      $deadline_soon = true;
 		}
 
-		return sprintf( esc_html__( 'Deadline is %s', 'my-text-domain' ), $deadline );
+		return array(
+      'str'     => sprintf( esc_html__( 'Deadline is %s', 'my-text-domain' ), $deadline ),
+      'is_soon' => $deadline_soon
+    );
   } // end function get_post_deadline_string
 
   private function purge_transient_cache() {

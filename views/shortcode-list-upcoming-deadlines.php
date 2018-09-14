@@ -3,7 +3,11 @@
 		<div class="post">
 			<p>
 				<a href="<?php echo get_the_permalink( $post['post_id'] ) ?>"><?php echo $post['title'] ?></a><br />
-				<?php echo $post['deadline_str'] ?>
+				<?php if ( $post['deadline']['is_soon'] ) : ?>
+					<strong><?php echo $post['deadline']['str'] ?></strong>
+				<?php else : ?>
+					<?php echo $post['deadline']['str'] ?>
+				<?php endif; ?>
 			</p>
 		</tr>
 	<?php endforeach; ?>
