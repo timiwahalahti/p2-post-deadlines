@@ -3,7 +3,7 @@
  * Plugin name: P2 Post Deadlines
  * Plugin URI: https://wordpress.org/plugins/p2-post-deadlines
  * Description: Simple plugin to add deadlines for P2 posts and list upcoming deadlines
- * Version: 0.1.0
+ * Version: 1.0.0
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl.html
  * Text Domain: p2postdeadlines
@@ -14,11 +14,11 @@ if ( ! defined( 'ABSPATH' )  ) {
 }
 
 class P2_Post_Deadlines {
-	const VERSION = '0.1.0';
+	const VERSION = '1.0.0';
 
 	/**
 	 *  Throw some hooks to the water and add shortcodes.
-	 *  @since 0.1.0
+	 *  @since 1.0.0
 	 */
   public function __construct() {
     add_action( 'init',                                 array( $this, 'load_textdomain' ) );
@@ -42,7 +42,7 @@ class P2_Post_Deadlines {
    *  Register our scripts and styles. Enqueue will be done later on,
    *  only when P2 post form is visible.
    *
-   *  @since  0.1.0
+   *  @since  1.0.0
    */
   public function register_scripts() {
   	wp_register_script( 'p2-post-deadlines', plugins_url( 'script.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
@@ -55,7 +55,7 @@ class P2_Post_Deadlines {
   /**
    *  Add the input field and datepicker for post deadline.
    *
-   *  @since  0.1.0
+   *  @since  1.0.0
    */
   public function p2_post_form_add_datefield() {
   	// Enqueue scripts and styles as they are needed now.
@@ -72,7 +72,7 @@ class P2_Post_Deadlines {
 
   /**
    *  Save deadline for the post from AJAX call.
-   *  @since  0.1.0
+   *  @since  1.0.0
    */
   public function save_post_deadline() {
 		$saved = false; // state for return.
@@ -206,7 +206,7 @@ class P2_Post_Deadlines {
 
   /**
    *  If post has a deadline, show it in the end of post content.
-   *  @since  0.1.0
+   *  @since  1.0.0
    */
   public function show_post_deadline_in_content( $content ) {
   	global $post;
@@ -224,7 +224,7 @@ class P2_Post_Deadlines {
 
   /**
    *  Show listing of posts with upcoming deadlines.
-   *  @since  0.1.0
+   *  @since  1.0.0
    */
   public function shortcode_list_upcomig_deadlines( $atts = array() ) {
   	$atts = shortcode_atts( array( 'order' => 'ASC' ), $atts, 'upcoming_post_deadlines' );
@@ -312,7 +312,7 @@ class P2_Post_Deadlines {
 
   /**
    *  Validate that date is in proper format.
-   *  @since  0.1.0
+   *  @since  1.0.0
    */
   private function validate_date( $date, $format = 'Y-m-d' ) {
   	$d = DateTime::createFromFormat( $format, $date );
@@ -322,7 +322,7 @@ class P2_Post_Deadlines {
   /**
    *  Make beautiful string to tell when the deadline is.
    *
-   *  @since  0.1.0
+   *  @since  1.0.0
    */
   private function get_post_deadline_string( $post_deadline = null ) {
     $deadline_soon = false;
