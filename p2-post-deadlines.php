@@ -249,12 +249,14 @@ class P2_Post_Deadlines {
   		$order = 'ASC';
   	}
 
-  	// Try to serve posts from cache.
-    $today_key = date( 'Ymd' );
-  	$posts = get_transient( "p2_posts_with_deadline_{$today_key}_{$order}" );
-  	if ( is_array( $posts ) ) {
-  		return $posts;
-  	}
+  	// Try to serve posts from cache if allowed by filter.
+    if ( apply_filters( 'p2_post_deadlines_cache_posts_with_deadline', true ) )
+      $today_key = date( 'Ymd' );
+    	$posts = get_transient( "p2_posts_with_deadline_{$today_key}_{$order}" );
+    	if ( is_array( $posts ) ) {
+    		return $posts;
+    	}
+    }
 
   	$posts = array();
 		$args = array(
@@ -272,7 +274,7 @@ class P2_Post_Deadlines {
 			'update_post_meta_cache'	=> true,
 		);
 
-  	$query = new WP_Query( apply_filters( 'p2_post_deadlines_shortcode_list_upcomig_query_args', $args ) );
+  	$query = new WP_Query( apply_filters( 'p2_post_deadlines_list_upcomig_query_args', $args ) );
 
   	if ( $query->have_posts() ) {
   		while ( $query->have_posts() ) {
@@ -283,16 +285,17 @@ class P2_Post_Deadlines {
   			$posts[ $post_id ] = array(
   				'post_id'		=> $post_id,
   				'title'			=> get_the_title(),
-  				'deadline'	=> $post_deadline,
   				'deadline'	=> self::get_post_deadline_string( $post_deadline ),
   			);
   		}
   	}
 
-  	// Cache posts for 12 hours.
-  	set_transient( "p2_posts_with_deadline_{$today_key}_{$order}", $posts, DAY_IN_SECONDS );
+  	// Cache posts for 12 hours if allowed in hook.
+    if ( apply_filters( 'p2_post_deadlines_cache_posts_with_deadline', true ) )
+      set_transient( "p2_posts_with_deadline_{$today_key}_{$order}", $posts, apply_filters( 'p2_post_deadlines_cache_expiration', DAY_IN_SECONDS ) );
+    }
 
-  	return $posts;
+  	return apply_filters( 'p2_post_deadlines_list_upcomig_posts', $posts );
   } // end function get_posts_with_deadline
 
   /**
@@ -333,6 +336,7 @@ class P2_Post_Deadlines {
 		}
 
 		return array(
+      'raw'     => $post_deadline,
       'str'     => sprintf( esc_html__( 'Deadline is %s', 'p2postdeadlines' ), $deadline ),
       'is_soon' => $deadline_soon
     );
@@ -342,6 +346,7 @@ class P2_Post_Deadlines {
     $today_key = date( 'Ymd' );
     delete_transient( "p2_posts_with_deadline_{$today_key}_ASC" );
     delete_transient( "p2_posts_with_deadline_{$today_key}_DESC" );
+    do_action( 'p2_post_deadlines_purge_transient_cache' );
   } // end function purge_transient_cache
 } // end class P2_Post_Deadlines
 
