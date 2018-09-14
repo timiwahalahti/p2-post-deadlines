@@ -21,6 +21,7 @@ class P2_Post_Deadlines {
 	 *  @since 0.1.0
 	 */
   public function __construct() {
+    add_action( 'init',                                 array( $this, 'load_textdomain' ) );
   	add_action( 'wp_enqueue_scripts',										array( $this, 'register_scripts' ) );
   	add_action( 'p2_post_form', 												array( $this, 'p2_post_form_add_datefield' ) );
   	add_action( 'wp_ajax_p2post_save_deadline', 				array( $this, 'save_post_deadline' ) );
@@ -33,6 +34,10 @@ class P2_Post_Deadlines {
     add_action( 'save_post',                            array( $this, 'save_meta_box' ) );
   } // end function __construct
 
+  public function load_textdomain() {
+    load_plugin_textdomain( 'p2postdeadlines', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+  }
+
   /**
    *  Register our scripts and styles. Enqueue will be done later on,
    *  only when P2 post form is visible.
@@ -41,7 +46,7 @@ class P2_Post_Deadlines {
    */
   public function register_scripts() {
   	wp_register_script( 'p2-post-deadlines', plugins_url( 'script.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
-  	wp_register_style( 'jquery-ui', 'http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css' );
+  	wp_register_style( 'jquery-ui', plugins_url( 'jquery-ui.smoothness.css', __FILE__ ) );
 
   	// Localize jQuery UI datepicker in ordedr to achieve filterable options.
   	wp_localize_script( 'jquery-ui-datepicker', 'p2postdeadlines', self::get_datepicker_settings() );
@@ -59,7 +64,7 @@ class P2_Post_Deadlines {
     wp_enqueue_style( 'jquery-ui' );
 
     // Add our field and nonce.
-    echo '<input id="p2-post-deadline-datepicker" type="text" name="p2-post-deadline" placeholder="Set deadline" autocomplete="off" />';
+    echo '<input id="p2-post-deadline-datepicker" type="text" name="p2-post-deadline" placeholder="' . __( 'Set deadline', 'p2postdeadlines' ) . '" autocomplete="off" />';
 		wp_nonce_field( 'p2post_save_deadline', 'p2post_save_deadline_nonce' );
   } // end function p2_post_form_add_datefield
 
@@ -107,7 +112,7 @@ class P2_Post_Deadlines {
 
     // Enqueue jquery ui datepicker js and css.
     wp_enqueue_script( 'jquery-ui-datepicker' );
-    wp_register_style( 'jquery-ui', 'http://code.jquery.com/ui/1.11.2/themes/smoothness/jquery-ui.css' );
+    wp_register_style( 'jquery-ui', plugins_url( 'jquery-ui.smoothness.css', __FILE__ ) );
     wp_enqueue_style( 'jquery-ui' );
   } // end function register_admin_scripts
 
@@ -135,10 +140,8 @@ class P2_Post_Deadlines {
     }
 
     // Add field and bit of js fo datepicker.
-    echo '<input id="p2-post-deadline-datepicker" type="text" name="p2-post-deadline" value="' . $value . '" placeholder="Set deadline" autocomplete="off" />';
-    echo '<script>jQuery(document).ready(function($) {
-    $("#p2-post-deadline-datepicker").datepicker(' . json_encode( self::get_datepicker_settings() ) . ');
-  });</script>';
+    echo '<input id="p2-post-deadline-datepicker" type="text" name="p2-post-deadline" value="' . $value . '" placeholder="' . __( 'Set deadline', 'p2postdeadlines' ) . '" autocomplete="off" />';
+    echo '<script>jQuery(document).ready(function($) {$("#p2-post-deadline-datepicker").datepicker(' . json_encode( self::get_datepicker_settings() ) . ');});</script>';
 
     // Add nonce for security.
     wp_nonce_field( 'p2post_save_deadline', 'p2post_save_deadline_nonce' );
@@ -228,7 +231,7 @@ class P2_Post_Deadlines {
   	if ( $posts ) {
   		include plugin_dir_path( __FILE__ ) . 'views/shortcode-list-upcoming-deadlines.php';
   	} else {
-  		echo '<p>' . __( 'There is no posts with upcoming deadlines.', 'my-text-domain' ) . '</p>';
+  		echo '<p>' . __( 'There is no upcoming deadlines.', 'p2postdeadlines' ) . '</p>';
   	}
   } // end function shortcode_upcomig_deadlines
 
@@ -316,22 +319,23 @@ class P2_Post_Deadlines {
   	$deadline = date_i18n( get_option( 'date_format' ), strtotime( $post_deadline ) );
 
 		if ( date( 'Y-m-d' ) === $post_deadline ) {
-		  $deadline = __( 'today', 'my-text-domain' );
+		  $deadline = __( 'today', 'p2postdeadlines' );
       $deadline_soon = true;
 		} else if ( date( 'Y-m-d', strtotime( 'tomorrow' ) ) === $post_deadline ) {
-		  $deadline = __( 'tomorrow', 'my-text-domain' );
+		  $deadline = __( 'tomorrow', 'p2postdeadlines' );
       $deadline_soon = true;
 		}
 
 		return array(
-      'str'     => sprintf( esc_html__( 'Deadline is %s', 'my-text-domain' ), $deadline ),
+      'str'     => sprintf( esc_html__( 'Deadline is %s', 'p2postdeadlines' ), $deadline ),
       'is_soon' => $deadline_soon
     );
   } // end function get_post_deadline_string
 
   private function purge_transient_cache() {
-    delete_transient( 'p2_posts_with_deadline_ASC' );
-    delete_transient( 'p2_posts_with_deadline_DESC' );
+    $today_key = date( 'Ymd' );
+    delete_transient( "p2_posts_with_deadline_{$today_key}_ASC" );
+    delete_transient( "p2_posts_with_deadline_{$today_key}_DESC" );
   } // end function purge_transient_cache
 } // end class P2_Post_Deadlines
 
