@@ -63,8 +63,10 @@ class P2_Post_Deadlines {
   	wp_enqueue_script( 'jquery-ui-datepicker' );
     wp_enqueue_style( 'jquery-ui' );
 
-    // Add our field and nonce.
+    // Add our field.
     echo '<input id="p2-post-deadline-datepicker" type="text" name="p2-post-deadline" placeholder="' . __( 'Set deadline', 'p2postdeadlines' ) . '" autocomplete="off" />';
+
+    // Add nonce for security.
 		wp_nonce_field( 'p2post_save_deadline', 'p2post_save_deadline_nonce' );
   } // end function p2_post_form_add_datefield
 
@@ -229,7 +231,11 @@ class P2_Post_Deadlines {
 
   	// There is posts, show listing.
   	if ( $posts ) {
-  		include plugin_dir_path( __FILE__ ) . 'views/shortcode-list-upcoming-deadlines.php';
+      if ( ! empty( locate_template( array( 'p2-post-deadlines-shortcode-list-upcoming.php' ) ) ) ) {
+        include get_theme_file_path( 'p2-post-deadlines-shortcode-list-upcoming.php' );
+      } else {
+        include plugin_dir_path( __FILE__ ) . 'views/shortcode-list-upcoming-deadlines.php';
+      }
   	} else {
   		echo '<p>' . __( 'There is no upcoming deadlines.', 'p2postdeadlines' ) . '</p>';
   	}
