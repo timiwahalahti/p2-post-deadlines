@@ -2,7 +2,7 @@
 /**
  * Plugin name: P2 Post Deadlines
  * Plugin URI: https://wordpress.org/plugins/p2-post-deadlines
- * Description: Simple plugin to add deadlines for P2 posts and list upcoming deadlines
+ * Description: Simple plugin to add deadlines for P2 posts and list posts with upcoming deadlines
  * Version: 1.0.0
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl.html
@@ -262,7 +262,10 @@ class P2_Post_Deadlines {
     	}
     }
 
+    // Init results array.
   	$posts = array();
+
+    // Query args for getting post with upcoming deadlines.
 		$args = array(
 			'post_type'								=> 'post',
 			'post_status'							=> 'publish',
@@ -278,12 +281,15 @@ class P2_Post_Deadlines {
 			'update_post_meta_cache'	=> true,
 		);
 
+    // Allow query args filtering.
   	$query = new WP_Query( apply_filters( 'p2_post_deadlines_list_upcomig_query_args', $args ) );
 
+    // Loop posts with upcoming deadlines.
   	if ( $query->have_posts() ) {
   		while ( $query->have_posts() ) {
   			$query->the_post();
 
+        // Get post information add add it to results array.
   			$post_id = get_the_id();
   			$post_deadline = get_post_meta( $post_id, '_p2_post_deadline', true );
   			$posts[ $post_id ] = array(
@@ -294,12 +300,12 @@ class P2_Post_Deadlines {
   		}
   	}
 
-  	// Cache posts for 12 hours if allowed in hook.
+  	// Cache posts for one day if allowed in hook.
     if ( apply_filters( 'p2_post_deadlines_cache_posts_with_deadline', true ) ) {
       set_transient( "p2_posts_with_deadline_{$today_key}_{$order}", $posts, apply_filters( 'p2_post_deadlines_cache_expiration', DAY_IN_SECONDS ) );
     }
 
-  	return apply_filters( 'p2_post_deadlines_list_upcomig_posts', $posts );
+  	return apply_filters( 'p2_post_deadlines_get_posts_with_deadline_result', $posts );
   } // end function get_posts_with_deadline
 
   /**
@@ -339,18 +345,25 @@ class P2_Post_Deadlines {
       $deadline_soon = true;
 		}
 
-		return array(
+		return apply_filter( 'p2_post_deadlines_deadline_string', array(
       'raw'     => $post_deadline,
       'str'     => sprintf( esc_html__( 'Deadline is %s', 'p2postdeadlines' ), $deadline ),
       'is_soon' => $deadline_soon
-    );
+    ) );
   } // end function get_post_deadline_string
 
+  /**
+   *  Purge all transient caches with one function.
+   *  @since  1.0.0
+   */
   private function purge_transient_cache() {
+    // Purge just today, as other transients shouldn't exist.
     $today_key = date( 'Ymd' );
     delete_transient( "p2_posts_with_deadline_{$today_key}_ASC" );
     delete_transient( "p2_posts_with_deadline_{$today_key}_DESC" );
-    do_action( 'p2_post_deadlines_purge_transient_cache' );
+
+    // Fire action after transients have been purged.
+    do_action( 'p2_post_deadlines_purged_transient_cache' );
   } // end function purge_transient_cache
 } // end class P2_Post_Deadlines
 

@@ -8,7 +8,7 @@ Requires PHP: 5.2.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl.html
 
-Simple plugin to add deadlines for P2 posts and list upcoming deadlines
+Simple plugin to add deadlines for P2 posts and list posts with upcoming deadlines
 
 == Description ==
 

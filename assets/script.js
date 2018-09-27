@@ -1,11 +1,16 @@
 ( function( $ ) {
 	$( function() {
+		// Init the datepicker.
 	  $( "#p2-post-deadline-datepicker" ).datepicker( p2postdeadlines );
 	} );
 
+	// Hook to p2_new_post_submit_success JS action and maybe send post deadline.
 	$( document ).on( 'p2_new_post_submit_success', function( event, data ) {
+
+		// Get deadline.
 		var post_deadline = $( 'input#p2-post-deadline-datepicker' ).val();
 
+		// If deadline is set, send it.
 		if ( '' !== post_deadline ) {
 			$.post(
 				ajaxUrl.replace( '?p2ajax=true', '' ), {
@@ -16,6 +21,7 @@
 				}
 			);
 
+			// Empty deadline field after submission.
 			$( 'input#p2-post-deadline-datepicker' ).val('')
 		}
 	} )
