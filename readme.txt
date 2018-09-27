@@ -34,7 +34,7 @@ Post deadline can be set via datepicker in classic editor or Gutenberg from meta
 
 = How to list posts with upcoming deadlines? =
 
-Just use shortcode `[upcoming_post_deadlines]` somewhere in your content! If you want to change the order so that post with, add attribute `order="DESC"` to shortcode.
+Just use shortcode `[upcoming_post_deadlines]` somewhere in your content! If you want to change the order so that post with latest deadline is first, add attribute `order="DESC"` to shortcode.
 
 = Can I use my own template for shortcode? =
 
@@ -55,5 +55,5 @@ If you know your PHP and WordPress hooks, look throught `p2-post-deadlines.php` 
 == Changelog ==
 
 = 1.0.0 =
-* 2018-09-14
+* 2018-09-27
 * Initial release
