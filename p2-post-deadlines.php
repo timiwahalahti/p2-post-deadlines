@@ -45,8 +45,8 @@ class P2_Post_Deadlines {
    *  @since  1.0.0
    */
   public function register_scripts() {
-  	wp_register_script( 'p2-post-deadlines', plugins_url( 'script.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
-  	wp_register_style( 'jquery-ui', plugins_url( 'jquery-ui.smoothness.css', __FILE__ ) );
+  	wp_register_script( 'p2-post-deadlines', plugins_url( 'assets/script.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
+  	wp_register_style( 'jquery-ui', plugins_url( 'assets/jquery-ui.smoothness.css', __FILE__ ) );
 
   	// Localize jQuery UI datepicker in ordedr to achieve filterable options.
   	wp_localize_script( 'jquery-ui-datepicker', 'p2postdeadlines', self::get_datepicker_settings() );
