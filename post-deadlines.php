@@ -4,6 +4,9 @@
  * Plugin URI: https://wordpress.org/plugins/post-deadlines
  * Description: Simple plugin to add deadlines for posts and list posts with upcoming deadlines. Can be used as standalone or with P2 or o2.
  * Version: 1.0.0
+ * Requires at least: 4.6
+ * Tested up to: 4.9.8
+ * Stable tag: 1.0.0
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl.html
  * Text Domain: postdeadlines
