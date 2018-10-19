@@ -1,19 +1,19 @@
 <?php
 /**
  * Plugin name: Post Deadlines
- * Plugin URI: https://wordpress.org/plugins/p2-post-deadlines
- * Description: Simple plugin to add deadlines for P2 posts and list posts with upcoming deadlines
+ * Plugin URI: https://wordpress.org/plugins/post-deadlines
+ * Description: Simple plugin to add deadlines for posts and list posts with upcoming deadlines. Support P2 and o2.
  * Version: 1.0.0
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl.html
- * Text Domain: p2postdeadlines
+ * Text Domain: postdeadlines
  */
 
 if ( ! defined( 'ABSPATH' )  ) {
  	exit();
 }
 
-class P2_Post_Deadlines {
+class Post_Deadlines {
 	const VERSION = '1.0.0';
 
 	/**
@@ -23,15 +23,15 @@ class P2_Post_Deadlines {
   public function __construct() {
     add_action( 'init',                                 array( $this, 'load_textdomain' ) );
   	add_action( 'wp_enqueue_scripts',										array( $this, 'register_scripts' ) );
-  	add_action( 'p2_post_form', 												array( $this, 'p2_post_form_add_datefield' ) );
+  	add_action( 'p2_post_form',                         array( $this, 'p2_post_form_add_datefield' ) );
     add_action( 'o2_post_form_extras',                  array( $this, 'o2_post_form_add_datefield' ) );
-  	add_action( 'wp_ajax_p2post_save_deadline', 				array( $this, 'save_post_deadline' ) );
-		add_action( 'wp_ajax_nopriv_p2post_save_deadline', 	array( $this, 'save_post_deadline' ) );
-		add_filter( 'the_content', 													array( $this, 'show_post_deadline_in_content' ) );
-  	add_shortcode( 'upcoming_post_deadlines',						array( $this, 'shortcode_list_upcomig_deadlines' ) );
+  	add_action( 'wp_ajax_post_save_deadline',           array( $this, 'save_post_deadline' ) );
+		add_action( 'wp_ajax_nopriv_post_save_deadline', 	  array( $this, 'save_post_deadline' ) );
     add_action( 'admin_enqueue_scripts',                array( $this, 'register_admin_scripts' ) );
     add_action( 'add_meta_boxes',                       array( $this, 'register_meta_box' ) );
     add_action( 'save_post',                            array( $this, 'save_meta_box' ) );
+    add_filter( 'the_content',                          array( $this, 'show_post_deadline_in_content' ) );
+    add_shortcode( 'upcoming_post_deadlines',           array( $this, 'shortcode_list_upcomig_deadlines' ) );
   } // end function __construct
 
   public function load_textdomain() {
@@ -45,16 +45,16 @@ class P2_Post_Deadlines {
    *  @since  1.0.0
    */
   public function register_scripts() {
-  	wp_register_script( 'p2-post-deadlines', plugins_url( 'assets/script.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
+  	wp_register_script( 'post-deadlines', plugins_url( 'assets/script.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
   	wp_register_style( 'jquery-ui', plugins_url( 'assets/jquery-ui.smoothness.css', __FILE__ ) );
 
     // Really enqueue our scripts.
-    wp_enqueue_script( 'p2-post-deadlines' );
+    wp_enqueue_script( 'post-deadlines' );
     wp_enqueue_script( 'jquery-ui-datepicker' );
     wp_enqueue_style( 'jquery-ui' );
 
   	// Localize in order to achieve filterable datepicker options.
-  	wp_localize_script( 'p2-post-deadlines', 'p2postdeadlines', array(
+  	wp_localize_script( 'post-deadlines', 'postdeadlines', array(
       'datepicker_settings' => self::get_datepicker_settings(),
       'ajaxurl'             => admin_url( 'admin-ajax.php' ),
     ) );
@@ -67,10 +67,10 @@ class P2_Post_Deadlines {
    */
   public function p2_post_form_add_datefield() {
     // Add our field.
-    echo '<div class="p2-post-deadline-wrapper"><input id="p2-post-deadline-datepicker" type="text" name="p2-post-deadline" placeholder="' . __( 'Set deadline', 'p2postdeadlines' ) . '" autocomplete="off" /></div>';
+    echo '<div class="post-deadline-wrapper"><input id="post-deadline-datepicker" type="text" name="post-deadline" placeholder="' . __( 'Set deadline', 'postdeadlines' ) . '" autocomplete="off" /></div>';
 
     // Add nonce for security.
-		wp_nonce_field( 'p2post_save_deadline', 'p2post_save_deadline_nonce' );
+		wp_nonce_field( 'post_save_deadline', 'post_save_deadline_nonce' );
   } // end function p2_post_form_add_datefield
 
   /**
@@ -99,10 +99,10 @@ class P2_Post_Deadlines {
 			wp_die( $saved );
 		}
 
-		check_ajax_referer( 'p2post_save_deadline', 'p2post_save_deadline_nonce' );
+		check_ajax_referer( 'post_save_deadline', 'post_save_deadline_nonce' );
 
 		if ( current_user_can( 'edit_post', $post_id ) && self::validate_date( $post_deadline ) ) {
-			update_post_meta( $post_id, '_p2_post_deadline', $post_deadline );
+			update_post_meta( $post_id, '_post_deadline', $post_deadline );
       self::purge_transient_cache();
 		}
 
@@ -138,7 +138,7 @@ class P2_Post_Deadlines {
    *  @since  0.2.0
    */
   public function register_meta_box() {
-    add_meta_box( 'p2-post-deadline', 'P2 Post deadline', array( $this, 'meta_box_display_callback' ), 'post', 'side', 'high', array(
+    add_meta_box( 'post-deadline', 'Post deadline', array( $this, 'meta_box_display_callback' ), 'post', 'side', 'high', array(
       '__back_compat_meta_box' => false, // Support Gutenberg better.
     ) );
   } // end function register_meta_box
@@ -149,7 +149,7 @@ class P2_Post_Deadlines {
    */
   public function meta_box_display_callback( $post ) {
     $value = ''; // Set default value.
-    $post_deadline = get_post_meta( $post->ID, '_p2_post_deadline', true ); // Get saved deadline.
+    $post_deadline = get_post_meta( $post->ID, '_post_deadline', true ); // Get saved deadline.
 
     // If there is deadline set and it is valud date, use it.
     if ( ! empty( $post_deadline ) && self::validate_date( $post_deadline ) ) {
@@ -157,11 +157,11 @@ class P2_Post_Deadlines {
     }
 
     // Add field and bit of js fo datepicker.
-    echo '<input id="p2-post-deadline-datepicker" type="text" name="p2-post-deadline" value="' . $value . '" placeholder="' . __( 'Set deadline', 'p2postdeadlines' ) . '" autocomplete="off" />';
-    echo '<script>jQuery(document).ready(function($) {$("#p2-post-deadline-datepicker").datepicker(' . json_encode( self::get_datepicker_settings() ) . ');});</script>';
+    echo '<input id="post-deadline-datepicker" type="text" name="post-deadline" value="' . $value . '" placeholder="' . __( 'Set deadline', 'postdeadlines' ) . '" autocomplete="off" />';
+    echo '<script>jQuery(document).ready(function($) {$("#post-deadline-datepicker").datepicker(' . json_encode( self::get_datepicker_settings() ) . ');});</script>';
 
     // Add nonce for security.
-    wp_nonce_field( 'p2post_save_deadline', 'p2post_save_deadline_nonce' );
+    wp_nonce_field( 'post_save_deadline', 'post_save_deadline_nonce' );
   } // end function meta_box_display_callback
 
   /**
@@ -169,8 +169,8 @@ class P2_Post_Deadlines {
    *  @since  0.2.0
    */
   public function save_meta_box( $post_id ) {
-    $nonce_name   = isset( $_POST['p2post_save_deadline_nonce'] ) ? $_POST['p2post_save_deadline_nonce'] : '';
-    $nonce_action = 'p2post_save_deadline';
+    $nonce_name   = isset( $_POST['post_save_deadline_nonce'] ) ? $_POST['post_save_deadline_nonce'] : '';
+    $nonce_action = 'post_save_deadline';
 
     // Check if nonce is set.
     if ( ! isset( $nonce_name ) ) {
@@ -198,24 +198,24 @@ class P2_Post_Deadlines {
     }
 
     // Check if deadline is set, delete existing if not.
-    if ( ! isset( $_POST['p2-post-deadline'] ) ) {
-      delete_post_meta( $post_id, '_p2_post_deadline' );
+    if ( ! isset( $_POST['post-deadline'] ) ) {
+      delete_post_meta( $post_id, '_post_deadline' );
       self::purge_transient_cache();
       return;
     }
 
     // Sanitize submitted date.
-    $date = sanitize_text_field( $_POST['p2-post-deadline'] );
+    $date = sanitize_text_field( $_POST['post-deadline'] );
 
     // Validate that date is really date, delete existing deadline if not valid.
     if ( ! self::validate_date( $date ) ) {
-      delete_post_meta( $post_id, '_p2_post_deadline' );
+      delete_post_meta( $post_id, '_post_deadline' );
       self::purge_transient_cache();
       return;
     }
 
     // Finally set the deadline.
-    update_post_meta( $post_id, '_p2_post_deadline', $date );
+    update_post_meta( $post_id, '_post_deadline', $date );
     self::purge_transient_cache();
   } // end function save_meta_box
 
@@ -226,7 +226,7 @@ class P2_Post_Deadlines {
   public function show_post_deadline_in_content( $content ) {
     if ( apply_filters( 'post_deadlines_show_post_deadline_in_content', true ) ) {
     	global $post;
-    	$post_deadline = get_post_meta( $post->ID, '_p2_post_deadline', true );
+    	$post_deadline = get_post_meta( $post->ID, '_post_deadline', true );
 
     	if ( empty( $post_deadline ) ) {
     		return $content;
@@ -234,7 +234,7 @@ class P2_Post_Deadlines {
 
     	// Add the deadline to end of content.
       $deadline = self::get_post_deadline_string( $post_deadline );
-    	$content .= '<p class="p2-post-deadline">' . $deadline['str'] . '</p> ';
+    	$content .= '<p class="post-deadline">' . $deadline['str'] . '</p> ';
     }
 
 		return $content;
@@ -250,13 +250,13 @@ class P2_Post_Deadlines {
 
   	// There is posts, show listing.
   	if ( $posts ) {
-      if ( ! empty( locate_template( array( 'p2-post-deadlines-shortcode-list-upcoming.php' ) ) ) ) {
-        include get_theme_file_path( 'p2-post-deadlines-shortcode-list-upcoming.php' );
+      if ( ! empty( locate_template( array( 'post-deadlines-shortcode-list-upcoming.php' ) ) ) ) {
+        include get_theme_file_path( 'post-deadlines-shortcode-list-upcoming.php' );
       } else {
         include plugin_dir_path( __FILE__ ) . 'views/shortcode-list-upcoming-deadlines.php';
       }
   	} else {
-  		echo '<p>' . __( 'There is no upcoming deadlines.', 'p2postdeadlines' ) . '</p>';
+  		echo '<p>' . __( 'There is no upcoming deadlines.', 'postdeadlines' ) . '</p>';
   	}
   } // end function shortcode_upcomig_deadlines
 
@@ -271,7 +271,7 @@ class P2_Post_Deadlines {
   	// Try to serve posts from cache if allowed by filter.
     if ( apply_filters( 'post_deadlines_cache_posts_with_deadline', true ) ) {
       $today_key = date( 'Ymd' );
-    	$posts = get_transient( "p2_posts_with_deadline_{$today_key}_{$order}" );
+    	$posts = get_transient( "posts_with_deadline_{$today_key}_{$order}" );
     	if ( is_array( $posts ) ) {
     		return $posts;
     	}
@@ -286,7 +286,7 @@ class P2_Post_Deadlines {
 			'post_status'							=> 'publish',
 			'order'										=> $order,
 			'orderby'									=> 'meta_value',
-			'meta_key'								=> '_p2_post_deadline',
+			'meta_key'								=> '_post_deadline',
 			'meta_value'							=> date( 'Y-m-d' ),
 			'meta_compare'						=> '>=',
 			'posts_per_page'					=> 100,
@@ -306,7 +306,7 @@ class P2_Post_Deadlines {
 
         // Get post information add add it to results array.
   			$post_id = get_the_id();
-  			$post_deadline = get_post_meta( $post_id, '_p2_post_deadline', true );
+  			$post_deadline = get_post_meta( $post_id, '_post_deadline', true );
   			$posts[ $post_id ] = array(
   				'post_id'		=> $post_id,
   				'title'			=> get_the_title(),
@@ -317,7 +317,7 @@ class P2_Post_Deadlines {
 
   	// Cache posts for one day if allowed in hook.
     if ( apply_filters( 'post_deadlines_cache_posts_with_deadline', true ) ) {
-      set_transient( "p2_posts_with_deadline_{$today_key}_{$order}", $posts, apply_filters( 'post_deadlines_cache_expiration', DAY_IN_SECONDS ) );
+      set_transient( "posts_with_deadline_{$today_key}_{$order}", $posts, apply_filters( 'post_deadlines_cache_expiration', DAY_IN_SECONDS ) );
     }
 
   	return apply_filters( 'post_deadlines_get_posts_with_deadline_result', $posts );
@@ -353,16 +353,16 @@ class P2_Post_Deadlines {
   	$deadline = date_i18n( get_option( 'date_format' ), strtotime( $post_deadline ) );
 
 		if ( date( 'Y-m-d' ) === $post_deadline ) {
-		  $deadline = __( 'today', 'p2postdeadlines' );
+		  $deadline = __( 'today', 'postdeadlines' );
       $deadline_soon = true;
 		} else if ( date( 'Y-m-d', strtotime( 'tomorrow' ) ) === $post_deadline ) {
-		  $deadline = __( 'tomorrow', 'p2postdeadlines' );
+		  $deadline = __( 'tomorrow', 'postdeadlines' );
       $deadline_soon = true;
 		}
 
 		return apply_filters( 'post_deadlines_deadline_string', array(
       'raw'     => $post_deadline,
-      'str'     => sprintf( esc_html__( 'Deadline is %s', 'p2postdeadlines' ), $deadline ),
+      'str'     => sprintf( esc_html__( 'Deadline is %s', 'postdeadlines' ), $deadline ),
       'is_soon' => $deadline_soon
     ) );
   } // end function get_post_deadline_string
@@ -374,12 +374,12 @@ class P2_Post_Deadlines {
   private function purge_transient_cache() {
     // Purge just today, as other transients shouldn't exist.
     $today_key = date( 'Ymd' );
-    delete_transient( "p2_posts_with_deadline_{$today_key}_ASC" );
-    delete_transient( "p2_posts_with_deadline_{$today_key}_DESC" );
+    delete_transient( "posts_with_deadline_{$today_key}_ASC" );
+    delete_transient( "posts_with_deadline_{$today_key}_DESC" );
 
     // Fire action after transients have been purged.
     do_action( 'post_deadlines_purged_transient_cache' );
   } // end function purge_transient_cache
-} // end class P2_Post_Deadlines
+} // end class Post_Deadlines
 
-new P2_Post_Deadlines;
+new Post_Deadlines;

@@ -1,4 +1,4 @@
-<div class="p2-post-deadlines p2-post-deadlines-upcoming-list">
+<div class="post-deadlines post-deadlines-upcoming-list">
 	<?php
 	// Loop posts.
 	foreach ( $posts as $post ) : ?>

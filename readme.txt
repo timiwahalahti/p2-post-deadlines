@@ -1,6 +1,6 @@
-=== P2 Post Deadlines ===
+=== Post Deadlines ===
 Contributors: sippis
-Tags: p2, deadline, deadlines
+Tags: p2, o2, deadline, deadlines
 Requires at least: 4.6
 Tested up to: 4.9.8
 Stable tag: 1.0.0
@@ -30,7 +30,7 @@ Installing "P2 Post Deadlines" can be done either by searching for "P2 Post Dead
 
 = How I can set deadline for post? =
 
-Post deadline can be set via datepicker in classic editor or Gutenberg from meta box labeled "P2 Post deadline". If you are running P2 theme, deadline can be set from datepicker in front end post submit area also. 
+Post deadline can be set via datepicker in classic editor or Gutenberg from meta box labeled "P2 Post deadline". If you are running P2 theme, deadline can be set from datepicker in front end post submit area also.
 
 = How to list posts with upcoming deadlines? =
 
