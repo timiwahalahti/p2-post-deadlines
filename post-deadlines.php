@@ -2,7 +2,7 @@
 /**
  * Plugin name: Post Deadlines
  * Plugin URI: https://wordpress.org/plugins/post-deadlines
- * Description: Simple plugin to add deadlines for posts and list posts with upcoming deadlines. Support P2 and o2.
+ * Description: Simple plugin to add deadlines for posts and list posts with upcoming deadlines. Can be used as standalone or with P2 or o2.
  * Version: 1.0.0
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl.html
@@ -129,7 +129,7 @@ class Post_Deadlines {
 
     // Enqueue jquery ui datepicker js and css.
     wp_enqueue_script( 'jquery-ui-datepicker' );
-    wp_register_style( 'jquery-ui', plugins_url( 'jquery-ui.smoothness.css', __FILE__ ) );
+    wp_register_style( 'jquery-ui', plugins_url( 'assets/jquery-ui.smoothness.css', __FILE__ ) );
     wp_enqueue_style( 'jquery-ui' );
   } // end function register_admin_scripts
 
