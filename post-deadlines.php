@@ -6,7 +6,7 @@
  * Version: 1.0.0
  * Requires at least: 4.6
  * Tested up to: 4.9.8
- * Stable tag: 1.0.0
+ * Stable tag: 1.0.1
  * License: GPLv3
  * License URI: https://www.gnu.org/licenses/gpl.html
  * Text Domain: postdeadlines
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' )  ) {
 }
 
 class Post_Deadlines {
-	const VERSION = '1.0.0';
+	const VERSION = '1.0.1';
 
 	/**
 	 *  Throw some hooks to the water and add shortcodes.
@@ -130,6 +130,18 @@ class Post_Deadlines {
       return;
     }
 
+    // Register our scripts
+    wp_register_script( 'post-deadlines-admin', plugins_url( 'assets/admin-script.js', __FILE__ ), array( 'jquery' ), self::VERSION, true );
+
+    // Really enqueue our scripts.
+    wp_enqueue_script( 'post-deadlines-admin' );
+
+    // Localize in order to achieve filterable datepicker options.
+    wp_localize_script( 'post-deadlines-admin', 'postdeadlines', array(
+      'datepicker_settings' => self::get_datepicker_settings(),
+      'ajaxurl'             => admin_url( 'admin-ajax.php' ),
+    ) );
+
     // Enqueue jquery ui datepicker js and css.
     wp_enqueue_script( 'jquery-ui-datepicker' );
     wp_register_style( 'jquery-ui', plugins_url( 'assets/jquery-ui.smoothness.css', __FILE__ ) );
@@ -161,7 +173,6 @@ class Post_Deadlines {
 
     // Add field and bit of js fo datepicker.
     echo '<input id="post-deadline-datepicker" type="text" name="post-deadline" value="' . $value . '" placeholder="' . __( 'Set deadline', 'postdeadlines' ) . '" autocomplete="off" />';
-    echo '<script>jQuery(document).ready(function($) {$("#post-deadline-datepicker").datepicker(' . json_encode( self::get_datepicker_settings() ) . ');});</script>';
 
     // Add nonce for security.
     wp_nonce_field( 'post_save_deadline', 'post_save_deadline_nonce' );
